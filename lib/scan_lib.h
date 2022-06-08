@@ -11,6 +11,7 @@
 #include <thread>
 #include <algorithm>
 #include <set>
+#include <cassert>
 namespace fs = std::filesystem;
 
 class scan_util{
@@ -23,26 +24,39 @@ class scan_util{
             total_size += fs::file_size(danger);
         }
     };
-
     struct less_for_chunks_t{
         bool operator() (const dangers_chunk& first, const dangers_chunk& second) const { return first.total_size > second.total_size; }
     };
     using danger_chunks_tree_t = std::multiset<dangers_chunk, less_for_chunks_t>;
+    fs::path working_directory;
+
+
     void add_danger_to_set(danger_chunks_tree_t& chunks_set, const fs::path& danger);
     static bool is_significantly_bigger(uintmax_t big, uintmax_t small );
-    fs::path working_directory;
+
     danger_vector_t paths_to_all_possible_dangers();
     static bool is_possible_danger(const fs::path& path);
-    std::vector<dangers_chunk> split_dangers_into_chunks(uint32_t chinks, const danger_vector_t& dangers);
+    danger_chunks_tree_t split_dangers_into_chunks(uint32_t chinks, const danger_vector_t& dangers);
+
+
 
 public:
-    struct info{
+    struct info_counts{
         size_t processed_files, js_detects, cmd_detects, exe_detects, errors;
+        info_counts& operator+= (const info_counts& other);
+    };
+    struct info{
+
+        info_counts numbers;
         std::time_t time_for_scanning;
     };
 
     explicit  scan_util(const fs::path & directory) : working_directory(directory) {}
     info scan();
+
+
+private:
+    static info_counts scan_chunk(const dangers_chunk& dangers);
 };
 
 

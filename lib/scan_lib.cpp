@@ -15,6 +15,12 @@ scan_util::info scan_util::scan() {
             return fs::file_size(first) > fs::file_size(second);
         });
     auto chunks = split_dangers_into_chunks(THREADS, dangers);
+    std::vector<std::future<info_counts>> future_answer;
+    for (auto it = chunks.begin(); it != chunks.end(); ++it){
+        future_answer.push_back(
+                std::async(std::launch::async, scan_chunk, *it )
+                );
+    }
 
 }
 
@@ -35,13 +41,13 @@ bool scan_util::is_possible_danger(const fs::path & path) {
                                     path.extension() == ".js" );
 }
 
-std::vector<scan_util::dangers_chunk> scan_util::split_dangers_into_chunks(uint32_t chunks, const danger_vector_t & dangers) {
+scan_util::danger_chunks_tree_t scan_util::split_dangers_into_chunks(uint32_t chunks, const danger_vector_t & dangers) {
     std::multiset<dangers_chunk, less_for_chunks_t> chunks_set;
     for (uint32_t i = 0; i < chunks; ++i) chunks_set.emplace(); // filling set with chunks number of empty values
     for (const fs::path& danger: dangers){
         add_danger_to_set(chunks_set, danger);
     }
-    return std::vector<dangers_chunk>(chunks_set.begin(), chunks_set.end());
+    return chunks_set;
 }
 
 bool scan_util::is_significantly_bigger(uintmax_t big, uintmax_t small) {
@@ -62,5 +68,11 @@ void scan_util::add_danger_to_set(scan_util::danger_chunks_tree_t &chunks_set, c
     }
 }
 
+scan_util::info_counts scan_util::scan_chunk(const scan_util::dangers_chunk& dangers) {
+    return scan_util::info_counts();
+}
 
 
+scan_util::info_counts &scan_util::info_counts::operator+=(const scan_util::info_counts &other) {
+    throw std::runtime_error("not implemented"); // TODO: do this)
+}
