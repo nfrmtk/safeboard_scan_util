@@ -11,7 +11,9 @@
 #include <thread>
 #include <algorithm>
 #include <set>
+#include <fstream>
 #include <cassert>
+#include <regex>
 namespace fs = std::filesystem;
 
 class scan_util{
@@ -46,7 +48,6 @@ public:
         info_counts& operator+= (const info_counts& other);
     };
     struct info{
-
         info_counts numbers;
         std::time_t time_for_scanning;
     };
@@ -57,6 +58,7 @@ public:
 
 private:
     static info_counts scan_chunk(const dangers_chunk& dangers);
+    static info_counts scan_file(const fs::path& file);
 };
 
 

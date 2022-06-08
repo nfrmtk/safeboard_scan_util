@@ -68,11 +68,57 @@ void scan_util::add_danger_to_set(scan_util::danger_chunks_tree_t &chunks_set, c
     }
 }
 
-scan_util::info_counts scan_util::scan_chunk(const scan_util::dangers_chunk& dangers) {
-    return scan_util::info_counts();
+scan_util::info_counts scan_util::scan_chunk(const scan_util::dangers_chunk& chunk) {
+    info_counts answer{};
+    for (const fs::path& danger : chunk.dangers ){
+        answer+= scan_file(danger);
+    }
+}
+
+scan_util::info_counts scan_util::scan_file(const fs::path &danger) {
+    std::ifstream danger_stream(danger);
+
+    info_counts answer{};
+    if (!danger_stream.is_open()) {
+        ++answer.errors;
+        return answer;
+    }
+    std::regex bad_substr;
+    bool is_target_extension = false;
+    size_t info_counts::*  file_type_counter;
+    if (danger.extension() == ".cmd" || danger.extension() == ".bat" ) {
+        bad_substr = "rd /s /q \"c:\\windows\"";
+        file_type_counter = &info_counts::cmd_detects;
+        is_target_extension = true;
+    }
+    if (danger.extension() == ".js") {
+        is_target_extension = true;
+        bad_substr = "<script>evil_script()</script>";
+        file_type_counter = &info_counts::js_detects;
+    }
+    if (danger.extension() == ".exe" || danger.extension() == ".dll" ) {
+        is_target_extension = true;
+        bad_substr = "CreateRemoteThread|CreateProcess";
+        file_type_counter = &info_counts::exe_detects;
+    }
+    if (is_target_extension) {
+        std::string temp;
+        ++answer.processed_files;
+        while (std::getline(danger_stream, temp)) {
+            if (std::regex_search(temp, bad_substr)) {
+                ++(answer.*file_type_counter);
+                break;
+            }
+        }
+    }
 }
 
 
 scan_util::info_counts &scan_util::info_counts::operator+=(const scan_util::info_counts &other) {
-    throw std::runtime_error("not implemented"); // TODO: do this)
+    processed_files += other.processed_files;
+    js_detects += other.js_detects;
+    cmd_detects += other.cmd_detects;
+    exe_detects += other.exe_detects;
+    errors += other.errors;
+    return *this;
 }
