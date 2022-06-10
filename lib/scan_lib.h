@@ -47,18 +47,20 @@ public:
         size_t processed_files, js_detects, cmd_detects, exe_detects, errors;
         info_counts& operator+= (const info_counts& other);
     };
+
     struct info{
         info_counts numbers;
         std::time_t time_for_scanning;
     };
 
-    explicit  scan_util(const fs::path & directory) : working_directory(directory) {}
+    explicit  scan_util(fs::path && directory) : working_directory(std::move(directory)) {}
     info scan();
 
 
 private:
     static info_counts scan_chunk(const dangers_chunk& dangers);
     static info_counts scan_file(const fs::path& file);
+    static bool check_if_string_is_bad(const std::string& line, const fs::path& extension);
 };
 
 
