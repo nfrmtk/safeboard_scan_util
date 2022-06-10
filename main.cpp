@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         output_result(scan_info);
     }
     catch(const std::exception& err){
-        std::cout << err.what() << "occured. The directory is incorrect\n";
+        std::cerr << err.what() << "occured. The directory is incorrect\n";
         std::cerr << ap;
     }
     return 0;
