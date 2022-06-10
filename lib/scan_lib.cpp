@@ -88,7 +88,6 @@ scan_util::info_counts scan_util::scan_file(const fs::path &danger) {
         ++answer.errors;
         return answer;
     }
-    std::regex bad_substr;
     bool is_target_extension = false;
     size_t info_counts::*  file_type_counter;
     if (danger.extension() == ".cmd" || danger.extension() == ".bat" ) {
