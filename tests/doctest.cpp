@@ -7,7 +7,7 @@
 #include <scan_lib.h>
 
 TEST_CASE("init"){
-    scan_util util("C:\\Users\\Lykov\\Documents\\code_playground");
+    scan_util util(std::filesystem::current_path());
     auto ans = util.scan();
-    CHECK_GE(ans.numbers.processed_files, 1);
+    CHECK_EQ(ans.numbers.processed_files, 1);
 }
