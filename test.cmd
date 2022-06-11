@@ -1,0 +1,1 @@
+.\cmake-build-debug\scan_util.exe .\danger_directory\
